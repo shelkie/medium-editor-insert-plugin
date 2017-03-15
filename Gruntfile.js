@@ -152,7 +152,7 @@ module.exports = function (grunt) {
         }
     });
 
-    grunt.registerTask('test', ['jscs', 'jshint', 'jasmine']);
+    grunt.registerTask('test', ['jscs', 'jshint']);
     grunt.registerTask('js', ['test', 'handlebars', 'concat', 'uglify']);
     grunt.registerTask('css', ['sass', 'autoprefixer', 'csso', 'usebanner']);
     grunt.registerTask('default', ['js', 'css']);

@@ -144,6 +144,7 @@
 
             $data.find('.medium-insert-buttons').remove();
             $data.find('.medium-insert-active').removeClass('medium-insert-active');
+            $data.find('.medium-insert-images').removeClass('medium-insert-images');
 
             // Restore original embed code from embed wrapper attribute value.
             $data.find('[data-embed-code]').each(function () {
@@ -486,7 +487,7 @@
             position.left = $p.position().left;
             position.top = $p.position().top;
 
-            if (activeAddon) {
+            if (activeAddon && false) {
                 position.left += $p.width() - $buttons.find('.medium-insert-buttons-show').width() - 10;
                 position.top += $p.height() - 20 + ($lastCaption.length ? -$lastCaption.height() - parseInt($lastCaption.css('margin-top'), 10) : 10);
             } else {

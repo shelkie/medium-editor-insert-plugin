@@ -196,6 +196,7 @@
 
     Images.prototype.add = function () {
         var that = this,
+            options = {},
             $file = $(this.templates['src/js/templates/images-fileupload.hbs']()),
             fileUploadOptions = {
                 dataType: 'json',
@@ -221,7 +222,11 @@
             };
         }
 
-        $file.fileupload($.extend(true, {}, this.options.fileUploadOptions, fileUploadOptions));
+        options = $.extend(true, {}, this.options.fileUploadOptions, fileUploadOptions);
+
+        this.options.onImageAdded($file, options);
+
+        //$file.fileupload($.extend(true, {}, this.options.fileUploadOptions, fileUploadOptions));
 
         $file.click();
     };
@@ -281,6 +286,7 @@
             $place.append(this.templates['src/js/templates/images-progressbar.hbs']());
         }
 
+
         if (data.autoUpload || (data.autoUpload !== false && $(e.target).fileupload('option', 'autoUpload'))) {
             data.process().done(function () {
                 // If preview is set to true, let the showImage handle the upload start
@@ -294,6 +300,9 @@
                     reader.readAsDataURL(data.files[0]);
                 } else {
                     data.submit();
+                    /*file.fileupload('send', {
+                        files: file.files
+                    });*/
                 }
             });
         }
@@ -359,7 +368,7 @@
      */
 
     Images.prototype.uploadDone = function (e, data) {
-        $.proxy(this, 'showImage', data.result.files[0].url, data)();
+        $.proxy(this, 'showImage', data.result.url, data)();
 
         this.core.clean();
         this.sorting();
@@ -375,6 +384,7 @@
     Images.prototype.showImage = function (img, data) {
         var $place = this.$el.find('.medium-insert-active'),
             domImage,
+            file = data.files[0],
             that;
 
         // Hide editor's placeholder
@@ -421,8 +431,12 @@
                 }
             }
 
+
             if (this.options.preview) {
                 data.submit();
+                /*file.fileupload('send', {
+                    files: file.files
+                });*/
             } else if (this.options.uploadCompleted) {
                 this.options.uploadCompleted(data.context, data);
             }

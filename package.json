@@ -54,6 +54,7 @@
     "grunt-jscs": "^2.8.0",
     "grunt-sass": "~1.1.0",
     "grunt-template-jasmine-istanbul": "^0.3.4",
+    "jasmine": "^2.5.3",
     "jit-grunt": "^0.9.1",
     "time-grunt": "^1.1.0"
   },

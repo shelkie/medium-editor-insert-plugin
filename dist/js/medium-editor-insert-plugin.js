@@ -24,7 +24,7 @@
             Handlebars = require('handlebars/runtime');
             MediumEditor = require('medium-editor');
             require('jquery-sortable');
-            require('blueimp-file-upload');
+            //require('blueimp-file-upload');
 
             factory(jQuery, Handlebars, MediumEditor);
             return jQuery;
@@ -106,7 +106,7 @@ this["MediumInsert"]["Templates"]["src/js/templates/embeds-wrapper.hbs"] = Handl
 },"useData":true});
 
 this["MediumInsert"]["Templates"]["src/js/templates/images-fileupload.hbs"] = Handlebars.template({"compiler":[7,">= 4.0.0"],"main":function(container,depth0,helpers,partials,data) {
-    return "<input type=\"file\" multiple>";
+    return "<input name=\"file\" type=\"file\" class=\"cloudinary-fileupload\" data-cloudinary-field=\"image_id\" multiple>";
 },"useData":true});
 
 this["MediumInsert"]["Templates"]["src/js/templates/images-image.hbs"] = Handlebars.template({"1":function(container,depth0,helpers,partials,data) {
@@ -309,6 +309,7 @@ this["MediumInsert"]["Templates"]["src/js/templates/images-toolbar.hbs"] = Handl
 
             $data.find('.medium-insert-buttons').remove();
             $data.find('.medium-insert-active').removeClass('medium-insert-active');
+            $data.find('.medium-insert-images').removeClass('medium-insert-images');
 
             // Restore original embed code from embed wrapper attribute value.
             $data.find('[data-embed-code]').each(function () {
@@ -651,7 +652,7 @@ this["MediumInsert"]["Templates"]["src/js/templates/images-toolbar.hbs"] = Handl
             position.left = $p.position().left;
             position.top = $p.position().top;
 
-            if (activeAddon) {
+            if (activeAddon && false) {
                 position.left += $p.width() - $buttons.find('.medium-insert-buttons-show').width() - 10;
                 position.top += $p.height() - 20 + ($lastCaption.length ? -$lastCaption.height() - parseInt($lastCaption.css('margin-top'), 10) : 10);
             } else {
@@ -1646,6 +1647,7 @@ this["MediumInsert"]["Templates"]["src/js/templates/images-toolbar.hbs"] = Handl
                 acceptFileTypesError: 'This file is not in a supported format: ',
                 maxFileSizeError: 'This file is too big: '
             }
+            // uploadError: function($el, data) {}
             // uploadCompleted: function ($el, data) {}
         };
 
@@ -1768,6 +1770,7 @@ this["MediumInsert"]["Templates"]["src/js/templates/images-toolbar.hbs"] = Handl
 
     Images.prototype.add = function () {
         var that = this,
+            options = {},
             $file = $(this.templates['src/js/templates/images-fileupload.hbs']()),
             fileUploadOptions = {
                 dataType: 'json',
@@ -1793,7 +1796,11 @@ this["MediumInsert"]["Templates"]["src/js/templates/images-toolbar.hbs"] = Handl
             };
         }
 
-        $file.fileupload($.extend(true, {}, this.options.fileUploadOptions, fileUploadOptions));
+        options = $.extend(true, {}, this.options.fileUploadOptions, fileUploadOptions);
+
+        this.options.onImageAdded($file, options);
+
+        //$file.fileupload($.extend(true, {}, this.options.fileUploadOptions, fileUploadOptions));
 
         $file.click();
     };
@@ -1822,7 +1829,14 @@ this["MediumInsert"]["Templates"]["src/js/templates/images-toolbar.hbs"] = Handl
             uploadErrors.push(this.options.messages.maxFileSizeError + file.name);
         }
         if (uploadErrors.length > 0) {
+            if (this.options.uploadFailed && typeof this.options.uploadFailed === "function") {
+                this.options.uploadFailed(uploadErrors, data);
+
+                return;
+            }
+
             alert(uploadErrors.join("\n"));
+
             return;
         }
 
@@ -1846,6 +1860,7 @@ this["MediumInsert"]["Templates"]["src/js/templates/images-toolbar.hbs"] = Handl
             $place.append(this.templates['src/js/templates/images-progressbar.hbs']());
         }
 
+
         if (data.autoUpload || (data.autoUpload !== false && $(e.target).fileupload('option', 'autoUpload'))) {
             data.process().done(function () {
                 // If preview is set to true, let the showImage handle the upload start
@@ -1859,6 +1874,9 @@ this["MediumInsert"]["Templates"]["src/js/templates/images-toolbar.hbs"] = Handl
                     reader.readAsDataURL(data.files[0]);
                 } else {
                     data.submit();
+                    /*file.fileupload('send', {
+                        files: file.files
+                    });*/
                 }
             });
         }
@@ -1924,7 +1942,7 @@ this["MediumInsert"]["Templates"]["src/js/templates/images-toolbar.hbs"] = Handl
      */
 
     Images.prototype.uploadDone = function (e, data) {
-        $.proxy(this, 'showImage', data.result.files[0].url, data)();
+        $.proxy(this, 'showImage', data.result.url, data)();
 
         this.core.clean();
         this.sorting();
@@ -1940,6 +1958,7 @@ this["MediumInsert"]["Templates"]["src/js/templates/images-toolbar.hbs"] = Handl
     Images.prototype.showImage = function (img, data) {
         var $place = this.$el.find('.medium-insert-active'),
             domImage,
+            file = data.files[0],
             that;
 
         // Hide editor's placeholder
@@ -1986,8 +2005,12 @@ this["MediumInsert"]["Templates"]["src/js/templates/images-toolbar.hbs"] = Handl
                 }
             }
 
+
             if (this.options.preview) {
                 data.submit();
+                /*file.fileupload('send', {
+                    files: file.files
+                });*/
             } else if (this.options.uploadCompleted) {
                 this.options.uploadCompleted(data.context, data);
             }
